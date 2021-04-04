@@ -1,3 +1,24 @@
+
+// autobind decorator
+
+function Autobind(target: any, method:string, descriptor:PropertyDescriptor)
+{
+	const originalMethod = descriptor.value;
+
+	const adjDescriptor: PropertyDescriptor ={
+
+		configurable:true,
+
+		get(){
+			const boundFn = originalMethod.bind(this);
+
+			return boundFn;
+		}
+	};	
+
+	return adjDescriptor;
+}
+
 class ProjectInput
 {
 	templateEl: HTMLTemplateElement;
@@ -39,17 +60,42 @@ class ProjectInput
 		this.attact();
 	}
 
+	private getUserInput():[string,string,number] | void
+	{
+		const endterTitle = this.titleEl.value;
+		const endterdescription = this.descriptionEl.value;
+		const endterpeople = this.peopleEl.value;
 
+		return [endterTitle,endterdescription,+endterpeople];
+	}
+
+	@Autobind
 	private submitHandler(envent: Event)
 	{
 		envent.preventDefault();
 
-		console.log(this.titleEl.value);
+		const userInput = this.getUserInput();
+
+		if(Array.isArray(userInput))
+		{
+			const [title,desc,people] = userInput;
+
+			console.log(title,desc,people);
+
+			this.clearInput();
+		}
+	}
+
+	private clearInput()
+	{
+		this.titleEl.value ="";
+		this.descriptionEl.value = "";
+		this.peopleEl.value ="";
 	}
 
 	private configure()
 	{
-		this.elementEl.addEventListener('submit', this.submitHandler.bind(this));
+		this.elementEl.addEventListener('submit', this.submitHandler);
 	}
 
 	private attact()
